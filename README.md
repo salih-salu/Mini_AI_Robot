@@ -1,3 +1,3 @@
-Mini AI Companion – Version 1.0
+**MAC – My Mini AI Companion (Version 1.0)**
 
-My first version of a Mini AI Companion, designed for entertainment, communication, casual conversations, learning, and everyday assistance. A small step towards building my own virtual robot companion!
+Meet MAC, my first virtual robot companion! Designed for entertainment, communication, casual conversations, learning, and everyday assistance. A small step towards building a friendly digital companion.
