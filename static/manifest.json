@@ -1,0 +1,10 @@
+{
+  "name": "Mini AI Robot",
+  "short_name": "Robot",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#080d19",
+  "theme_color": "#080d19"
+}
+

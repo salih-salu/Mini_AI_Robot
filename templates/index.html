@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Mini AI Robot</title>
+
+    <!-- Mobile Fullscreen / Web App Tags -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#080d19">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <main class="robot-container">
+
+        <!-- Robot Face -->
+        <section class="robot-face">
+
+            <div class="antenna">
+                <div class="antenna-light"></div>
+            </div>
+
+            <div class="eyes-container">
+
+                <div class="eye">
+                    <div class="pupil"></div>
+                    <div class="shine"></div>
+                </div>
+
+                <div class="eye">
+                    <div class="pupil"></div>
+                    <div class="shine"></div>
+                </div>
+
+            </div>
+
+            <div class="mouth">
+                <div class="mouth-shape"></div>
+            </div>
+
+            <!-- Spoken text display -->
+            <p id="user-speech" class="user-speech"></p>
+
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,433 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: #080d19;
+    color: white;
+    font-family: Arial, sans-serif;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.robot-container {
+    width: 100%;
+    max-width: 620px;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 30px;
+}
+
+.status {
+    color: #65f7bb;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #65f7bb;
+    border-radius: 50%;
+    margin-right: 6px;
+    box-shadow: 0 0 10px #65f7bb;
+}
+
+h1 {
+    font-size: 29px;
+    margin-bottom: 8px;
+}
+
+header p {
+    color: #8c9bb5;
+    font-size: 14px;
+}
+
+/* ROBOT FACE (Horizontal / Landscape Phone Screen) */
+
+.robot-face {
+    width: 100%;
+    max-width: 560px;
+    height: 290px;
+
+    margin: auto;
+
+    background: #081220;
+
+    border: 12px solid #1c2738;
+    border-radius: 40px;
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow:
+        0 0 0 2px #2d3e58,
+        0 15px 40px rgba(0, 0, 0, 0.7),
+        0 0 35px rgba(0, 190, 255, 0.2),
+        inset 0 0 25px rgba(0, 190, 255, 0.08);
+}
+
+/* ANTENNA */
+
+.antenna {
+    position: absolute;
+    top: -35px;
+    width: 5px;
+    height: 35px;
+    background: #607b9e;
+}
+
+.antenna-light {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #42e9ff;
+    position: absolute;
+    top: -12px;
+    left: -6px;
+
+    box-shadow: 0 0 18px #42e9ff;
+
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        opacity: 0.5;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* EYES */
+
+.eyes-container {
+    display: flex;
+    gap: 70px;
+    margin-top: 10px;
+}
+
+.eye {
+    width: 85px;
+    height: 85px;
+
+    background: #06101e;
+    border: 3px solid #42dfff;
+    border-radius: 50%;
+
+    position: relative;
+    overflow: hidden;
+
+    box-shadow:
+        0 0 18px rgba(66, 223, 255, 0.5);
+
+    transition: all 0.3s ease;
+}
+
+.pupil {
+    width: 36px;
+    height: 42px;
+
+    background: #42e9ff;
+    border-radius: 50%;
+
+    position: absolute;
+    top: 21px;
+    left: 21px;
+
+    box-shadow: 0 0 15px #42e9ff;
+
+    transition: all 0.3s ease;
+}
+
+.shine {
+    width: 12px;
+    height: 12px;
+
+    background: white;
+    border-radius: 50%;
+
+    position: absolute;
+    top: 28px;
+    left: 30px;
+    z-index: 2;
+}
+
+/* MOUTH */
+
+.mouth {
+    margin-top: 35px;
+    width: 65px;
+    height: 20px;
+
+    display: flex;
+    justify-content: center;
+}
+
+.mouth-shape {
+    width: 45px;
+    height: 12px;
+
+    border-bottom: 4px solid #42e9ff;
+    border-radius: 50%;
+
+    transition: all 0.3s ease;
+}
+
+/* TALKING & EYE MOVEMENT ANIMATIONS */
+
+.robot-face.talking .mouth-shape {
+    animation: mouthTalk 0.25s infinite alternate ease-in-out;
+}
+
+@keyframes mouthTalk {
+    0% {
+        height: 10px;
+        width: 35px;
+        border-radius: 50%;
+        border-bottom: 4px solid #42e9ff;
+    }
+    50% {
+        height: 22px;
+        width: 48px;
+        border-radius: 40%;
+        border: 4px solid #42e9ff;
+        background: rgba(66, 233, 255, 0.2);
+    }
+    100% {
+        height: 16px;
+        width: 42px;
+        border-radius: 45%;
+        border: 4px solid #42e9ff;
+        background: rgba(66, 233, 255, 0.1);
+    }
+}
+
+.robot-face.talking .pupil {
+    animation: eyeLook 1.8s infinite ease-in-out;
+}
+
+@keyframes eyeLook {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(-7px, -4px);
+    }
+    50% {
+        transform: translate(6px, -2px);
+    }
+    75% {
+        transform: translate(0, 5px);
+    }
+}
+
+/* HAPPY */
+
+.robot-face.happy .eye {
+    height: 65px;
+    border-radius: 50% 50% 45% 45%;
+}
+
+.robot-face.happy .mouth-shape {
+    height: 22px;
+    border-bottom-width: 5px;
+}
+
+/* SAD */
+
+.robot-face.sad .pupil {
+    transform: translateY(12px);
+}
+
+.robot-face.sad .mouth-shape {
+    transform: rotate(180deg);
+    border-bottom-width: 4px;
+}
+
+/* ANGRY */
+
+.robot-face.angry .eye {
+    border-color: #ff6262;
+    box-shadow: 0 0 18px #ff6262;
+}
+
+.robot-face.angry .pupil {
+    background: #ff6262;
+    box-shadow: 0 0 15px #ff6262;
+    transform: scaleY(0.7);
+}
+
+.robot-face.angry .mouth-shape {
+    transform: rotate(180deg);
+}
+
+/* SURPRISED */
+
+.robot-face.surprised .eye {
+    transform: scale(1.12);
+}
+
+.robot-face.surprised .pupil {
+    transform: scale(0.7);
+}
+
+.robot-face.surprised .mouth-shape {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #42e9ff;
+    border-radius: 50%;
+}
+
+/* THINKING */
+
+.robot-face.thinking .eyes-container {
+    transform: translateY(-8px) rotate(-5deg);
+}
+
+.robot-face.thinking .pupil {
+    transform: translate(12px, -5px);
+}
+
+.robot-face.thinking .mouth-shape {
+    width: 30px;
+    border-radius: 0;
+}
+
+/* SLEEPY */
+
+.robot-face.sleepy .eye {
+    height: 8px;
+    border-radius: 20px;
+    background: #081220;
+    border-color: #2e5170;
+    box-shadow: 0 0 8px rgba(66, 223, 255, 0.2);
+}
+
+.robot-face.sleepy .pupil {
+    display: none;
+}
+
+.robot-face.sleepy .shine {
+    display: none;
+}
+
+.robot-face.sleepy .mouth-shape {
+    width: 25px;
+    border-bottom: 3px solid #2e5170;
+}
+
+/* BLINK */
+
+.robot-face.blink .eye {
+    transform: scaleY(0.08);
+}
+
+/* MESSAGE */
+
+.message-box {
+    margin: 30px 0;
+    padding: 18px;
+
+    background: #111d31;
+    border: 1px solid #263b57;
+    border-radius: 15px;
+}
+
+#emotion-label {
+    color: #42e9ff;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#robot-message {
+    margin-top: 10px;
+    color: #d4e1f5;
+    font-size: 15px;
+}
+
+/* BUTTONS */
+
+.controls h2 {
+    font-size: 17px;
+    margin-bottom: 15px;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+button {
+    padding: 13px 8px;
+
+    background: #172740;
+    color: white;
+
+    border: 1px solid #344c6d;
+    border-radius: 10px;
+
+    font-size: 14px;
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #25436a;
+    border-color: #42e9ff;
+    transform: translateY(-2px);
+}
+
+footer {
+    margin-top: 30px;
+    color: #667992;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+/* User speech subtitle */
+.user-speech {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #8ce8ff;
+    letter-spacing: 1px;
+    min-height: 20px;
+    text-shadow: 0 0 10px rgba(66, 233, 255, 0.4);
+}
+
+/* MOBILE & PORTRAIT: Force horizontal / landscape view */
+@media (orientation: portrait) {
+    .robot-container {
+        transform: rotate(90deg);
+        width: 85vh;
+        max-width: none;
+    }
+
+    .robot-face {
+        width: 100%;
+        max-width: 600px;
+        height: 280px;
+    }
+}
