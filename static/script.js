@@ -1,127 +1,118 @@
 const robotFace = document.querySelector(".robot-face");
 const userSpeech = document.getElementById("user-speech");
+const eyesContainer = document.querySelector(".eyes-container");
 
-// 1. Natural blinking animation (only when awake)
+// Wake state: starts sleeping
+let isActive = false;
+robotFace.classList.add("sleepy");
+
+// 1. Smooth Blinking & Glances
 function blinkEyes() {
     if (!isActive) return;
     robotFace.classList.add("blink");
-    setTimeout(() => robotFace.classList.remove("blink"), 160);
+    setTimeout(() => robotFace.classList.remove("blink"), 120);
 }
-setInterval(() => {
-    if (Math.random() > 0.2) blinkEyes();
-}, 3000);
 
-// 2. Fullscreen on tap / click + Keep Screen Awake
+let glanceTimeout = null;
+function randomGlance() {
+    if (!isActive || robotFace.classList.contains("talking") || !eyesContainer) return;
+    const x = (Math.random() - 0.5) * 18;
+    const y = (Math.random() - 0.5) * 10;
+    eyesContainer.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+    clearTimeout(glanceTimeout);
+    glanceTimeout = setTimeout(() => {
+        if (eyesContainer) eyesContainer.style.transform = "translate3d(0, 0, 0)";
+    }, 1000);
+}
+
+setInterval(() => {
+    if (!isActive) return;
+    const rand = Math.random();
+    if (rand > 0.4) blinkEyes();
+    if (rand > 0.6) randomGlance();
+}, 2600);
+
+// 2. Fullscreen & Wake Lock
 let wakeLock = null;
 
 async function requestWakeLock() {
     try {
-        if ("wakeLock" in navigator) {
+        if ("wakeLock" in navigator && !wakeLock) {
             wakeLock = await navigator.wakeLock.request("screen");
+            wakeLock.addEventListener("release", () => { wakeLock = null; });
         }
-    } catch (err) {
-        console.warn("Wake Lock error:", err);
-    }
+    } catch (e) {}
 }
 
-// Re-acquire wake lock if user switches apps and returns
-document.addEventListener("visibilitychange", async () => {
-    if (wakeLock !== null && document.visibilityState === "visible") {
-        await requestWakeLock();
-    }
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") requestWakeLock();
 });
 
 function openFullscreen() {
     const doc = document.documentElement;
-    if (doc.requestFullscreen) {
-        doc.requestFullscreen().catch(() => {});
-    } else if (doc.webkitRequestFullscreen) {
-        doc.webkitRequestFullscreen();
-    }
-
-    // Keep screen from turning off
+    const rfs = doc.requestFullscreen || doc.webkitRequestFullscreen;
+    if (rfs) rfs.call(doc).catch(() => {});
     requestWakeLock();
 }
 
-// 3. Text to Speech (Robot voice) + Realistic animations
+// 3. Text to Speech with Smooth Eased Transitions
 function speak(text, onComplete) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.pitch = 1.2;
-    utterance.rate = 1.0;
+    utterance.rate = 1.05;
 
-    // Start talking animation
     utterance.onstart = () => {
+        robotFace.classList.remove("settling");
         robotFace.classList.add("talking");
     };
 
-    function finishSpeaking() {
+    function finish() {
         robotFace.classList.remove("talking");
+        robotFace.classList.add("settling");
+
+        setTimeout(() => {
+            robotFace.classList.remove("settling");
+            if (eyesContainer) eyesContainer.style.transform = "translate3d(0, 0, 0)";
+        }, 350);
+
         if (onComplete) onComplete();
     }
 
-    utterance.onend = finishSpeaking;
-    utterance.onerror = finishSpeaking;
-
+    utterance.onend = finish;
+    utterance.onerror = finish;
     window.speechSynthesis.speak(utterance);
 }
 
-// Wake state: starts sleeping with eyes closed
-let isActive = false;
-robotFace.classList.add("sleepy");
-
-// Helper to switch wake/sleep expressions
+// 4. Wake / Sleep Toggle
 function setWakeState(active) {
     isActive = active;
     if (active) {
         robotFace.classList.remove("sleepy");
     } else {
         robotFace.classList.add("sleepy");
+        if (eyesContainer) eyesContainer.style.transform = "translate3d(0, 0, 0)";
     }
 }
 
-// 4. Conversation Rules
-function processConversation(userText) {
-    const text = userText.toLowerCase();
-
-    // Check for Wake Word: "MAC"
-    if (!isActive) {
-        if (text.includes("mac") || text.includes("mack") || text.includes("mag")) {
-            setWakeState(true);
-            return "Yes, I am MAC. How can I help you?";
-        }
-        // Remain silent if wake word hasn't been spoken
-        return null;
+// 5. Query Local LangChain Ollama Backend
+async function askLangChain(question) {
+    try {
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: question })
+        });
+        const data = await response.json();
+        return data.reply || "I am here, how can I help?";
+    } catch (error) {
+        console.error("LangChain fetch error:", error);
+        return "Sorry, I had trouble connecting to my mind.";
     }
-
-    // Check for Sleep phrase: "Thank you"
-    if (text.includes("thank you") || text.includes("thanks")) {
-        setWakeState(false);
-        return "You are welcome! Going to sleep now.";
-    }
-
-    // Active conversation responses
-    if (text.includes("hi") || text.includes("hello")) {
-        return "Hi! How can I help you?";
-    }
-    if (text.includes("how are you")) {
-        return "I am good, what about you?";
-    }
-    if (text.includes("name") || text.includes("who are you")) {
-        return "I am MAC, your mini AI robot companion!";
-    }
-    if (text.includes("what are you doing") || text.includes("what can you do")) {
-        return "I am listening to your voice and talking with you!";
-    }
-    if (text.includes("bye") || text.includes("goodbye")) {
-        setWakeState(false);
-        return "Goodbye! Have a wonderful day!";
-    }
-
-    return "I heard you say " + userText;
 }
 
-// 5. Speech to Text (Voice Capture)
+// 6. Speech Recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (SpeechRecognition) {
@@ -131,57 +122,70 @@ if (SpeechRecognition) {
     recognition.interimResults = false;
 
     let isListening = false;
+    let restartTimer = null;
 
     function safeStart() {
-        if (!isListening) {
-            try {
-                recognition.start();
-                isListening = true;
-            } catch (e) {}
-        }
+        if (isListening) return;
+        try {
+            recognition.start();
+            isListening = true;
+        } catch (e) {}
     }
 
     function safeStop() {
-        if (isListening) {
-            try {
-                recognition.stop();
-            } catch (e) {}
-            isListening = false;
-        }
+        if (!isListening) return;
+        try {
+            recognition.stop();
+        } catch (e) {}
+        isListening = false;
     }
 
-    recognition.onstart = () => {
-        isListening = true;
-    };
+    recognition.onstart = () => { isListening = true; };
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
         const lastIndex = event.results.length - 1;
         const spokenText = event.results[lastIndex][0].transcript.trim();
-        console.log("User said:", spokenText);
+        const lowerText = spokenText.toLowerCase();
 
-        const reply = processConversation(spokenText);
-
-        // If robot is sleeping and wake word wasn't said, stay silent
-        if (!reply) {
-            if (userSpeech) {
-                userSpeech.textContent = `Sleeping... Say "MAC" to wake`;
+        // Check for Wake Word: "MAC"
+        if (!isActive) {
+            if (lowerText.includes("mac") || lowerText.includes("mack") || lowerText.includes("mag")) {
+                setWakeState(true);
+                safeStop();
+                if (userSpeech) userSpeech.textContent = `You: "${spokenText}"`;
+                speak("Yes, I am MAC. How can I help you?", () => {
+                    safeStart();
+                });
+            } else {
+                if (userSpeech) userSpeech.textContent = 'Sleeping... Say "MAC" to wake';
             }
             return;
         }
 
-        if (userSpeech) {
-            userSpeech.textContent = `You: "${spokenText}"`;
+        // Check for Sleep Command: "Thank you", "Thanks", "Goodbye"
+        if (lowerText.includes("thank you") || lowerText.includes("thanks") || lowerText.includes("bye") || lowerText.includes("goodbye")) {
+            setWakeState(false);
+            safeStop();
+            if (userSpeech) userSpeech.textContent = `You: "${spokenText}"`;
+            speak("You are welcome! Going to sleep now.", () => {
+                if (userSpeech) userSpeech.textContent = 'Sleeping... Say "MAC" to wake';
+                safeStart();
+            });
+            return;
         }
 
-        // Pause mic while speaking to avoid audio conflict on mobile
+        // Active conversation: Query the LangChain Ollama model
+        if (userSpeech) userSpeech.textContent = `You: "${spokenText}"`;
         safeStop();
-        speak(reply, () => {
+
+        const aiReply = await askLangChain(spokenText);
+
+        speak(aiReply, () => {
             safeStart();
         });
     };
 
     recognition.onerror = (event) => {
-        console.warn("Speech recognition notice:", event.error);
         if (userSpeech && event.error === "not-allowed") {
             userSpeech.textContent = "Mic denied. Enable microphone in browser settings.";
         }
@@ -189,22 +193,18 @@ if (SpeechRecognition) {
 
     recognition.onend = () => {
         isListening = false;
+        clearTimeout(restartTimer);
         if (!window.speechSynthesis.speaking) {
-            setTimeout(safeStart, 300);
+            restartTimer = setTimeout(safeStart, 250);
         }
     };
 
-    // Tap once to start listening in silent standby mode
     function startVoiceSession() {
         openFullscreen();
-        if (userSpeech) {
-            userSpeech.textContent = `Say "MAC" to wake me up`;
-        }
+        if (userSpeech) userSpeech.textContent = 'Say "MAC" to wake me up';
         safeStart();
     }
 
     document.addEventListener("click", startVoiceSession, { once: true });
     document.addEventListener("touchstart", startVoiceSession, { once: true });
-} else {
-    alert("Speech recognition is not supported in this browser. Please use Chrome.");
 }
