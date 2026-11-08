@@ -14,7 +14,7 @@ Meet **MAC**, my first virtual robot companion! Designed for entertainment, comm
 - Implemented voice input and output.
 
 ### 🔹 Version 2.0 – Ollama LLM Integration
-- Integrated a local LLM using Ollama.
+- Integrated a local LLM using Ollama with LangChain frame work.
 - Enabled open-ended conversations on any topic.
 - Added dynamic AI-generated responses.
 
