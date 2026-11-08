@@ -1,5 +1,9 @@
 # 🤖 MAC – My Mini AI Companion
 
+<p align="center">
+  <img src="images/MAC_Robot.jpg" width="300" alt="MAC Virtual Robot">
+</p>
+
 Meet **MAC**, my first virtual robot companion! Designed for entertainment, communication, learning, and everyday assistance. My goal is to build a friendly and interactive AI companion using modern AI technologies.
 
 ## 🚀 Version History
